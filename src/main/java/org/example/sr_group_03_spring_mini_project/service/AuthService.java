@@ -12,7 +12,7 @@ public interface AuthService extends UserDetailsService {
 
     AppUser register(AppUserRequest request);
 
-    void sendOtp(String email);
+    void resendOtp(String email);
 
     void verifyOtp(String email, String otp);
 }
