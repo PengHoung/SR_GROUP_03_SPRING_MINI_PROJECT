@@ -1,5 +1,17 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE TABLE achievements (
+CREATE TABLE if not exists app_users (
+                                         app_user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                         username VARCHAR(255) NOT NULL UNIQUE,
+                                         email VARCHAR(255) NOT NULL UNIQUE,
+                                         password VARCHAR(255) NOT NULL,
+                                         level INT DEFAULT 1,
+                                         xp INT DEFAULT 0,
+                                         profile_image VARCHAR(255),
+                                         is_verified BOOLEAN DEFAULT FALSE,
+                                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE  if not exists achievements (
       achievement_id SERIAL PRIMARY KEY,
       title VARCHAR(255) NOT NULL,
       description TEXT,
@@ -7,19 +19,9 @@ CREATE TABLE achievements (
       xp_required INT DEFAULT 0
 );
 
-CREATE TABLE app_users (
-       app_user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-       username VARCHAR(255) NOT NULL UNIQUE,
-       email VARCHAR(255) NOT NULL UNIQUE,
-       password VARCHAR(255) NOT NULL,
-       level INT DEFAULT 1,
-       xp INT DEFAULT 0,
-       profile_image VARCHAR(255),
-       is_verified BOOLEAN DEFAULT FALSE,
-       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
-CREATE TABLE app_user_achievements (
+
+CREATE TABLE if not exists app_user_achievements (
        app_user_achievement_id SERIAL PRIMARY KEY,
        app_user_id UUID NOT NULL,
        achievement_id INT NOT NULL,
@@ -38,7 +40,7 @@ CREATE TABLE app_user_achievements (
 
 );
 
-CREATE TABLE habits (
+CREATE TABLE if not exists habits (
         habit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         title VARCHAR(255) NOT NULL,
         description TEXT,
@@ -54,7 +56,7 @@ CREATE TABLE habits (
 
 );
 
-CREATE TABLE habit_logs (
+CREATE TABLE if not exists habit_logs (
         habit_log_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         log_date DATE NOT NULL,
         status VARCHAR(100),
@@ -67,3 +69,6 @@ CREATE TABLE habit_logs (
                 ON DELETE CASCADE
 
 );
+
+
+
