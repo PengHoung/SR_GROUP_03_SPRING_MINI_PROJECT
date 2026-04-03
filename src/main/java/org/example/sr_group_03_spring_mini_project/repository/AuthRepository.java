@@ -1,18 +1,17 @@
 package org.example.sr_group_03_spring_mini_project.repository;
 
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.annotations.*;
+import org.example.sr_group_03_spring_mini_project.config.UuidTypeHandler;
 import org.example.sr_group_03_spring_mini_project.model.entity.AppUser;
+
+import java.util.UUID;
 
 @Mapper
 public interface AuthRepository {
     String authMapper = "authMapper";
 
     @Results(id = authMapper, value = {
-            @Result(property = AppUser.Fields.appUserId, column = "app_user_id", jdbcType = JdbcType.OTHER),
+            @Result(property = AppUser.Fields.appUserId, column = "app_user_id"),
             @Result(property = AppUser.Fields.userName, column = "username"),
             @Result(property = AppUser.Fields.email, column = "email"),
             @Result(property = AppUser.Fields.level, column = "level"),
@@ -30,4 +29,22 @@ public interface AuthRepository {
             """)
     AppUser getAppUserByIdentifier(String identifier);
 
+    @ResultMap(authMapper)
+    @Select("SELECT * FROM app_users WHERE app_user_id = #{id}")
+    AppUser findById(UUID id);
+
+    @Select("SELECT COUNT(1) FROM app_users WHERE email = #{email} OR username=#{username}")
+    boolean existsByEmailOrUsername(String email, String username);
+
+
+    @ResultMap(authMapper)
+    @Select("""
+            INSERT INTO app_users (app_user_id, username, email, password, level, xp, profile_image, is_verified, created_at)
+            VALUES (DEFAULT, #{userName}, #{email}, #{password}, DEFAULT, DEFAULT, #{profileImage}, DEFAULT, DEFAULT)
+            RETURNING *;
+            """)
+    AppUser saveUser(AppUser user);
+
+    @Update("UPDATE app_users SET is_verified = TRUE WHERE email = #{email}")
+    void verifyUserByEmail(String email);
 }

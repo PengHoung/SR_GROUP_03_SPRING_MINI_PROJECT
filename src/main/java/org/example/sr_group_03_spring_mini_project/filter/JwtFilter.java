@@ -8,6 +8,7 @@ import org.example.sr_group_03_spring_mini_project.utils.JwtUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -34,6 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.contains("Bearer ")) {
             filterChain.doFilter(request, response);
+            return;
         }
         String jwt = authHeader.substring(7);
         String userIdentifier = jwtUtils.extractEmail(jwt);

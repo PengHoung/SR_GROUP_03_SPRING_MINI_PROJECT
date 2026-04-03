@@ -18,15 +18,27 @@ import java.time.Instant;
 public class ApiResponse<T> {
     private Instant timestamp;
     private String message;
-    private HttpStatus status;
+    private String status;
+    private Boolean success;
     private T payload;
 
     public static <T> ApiResponse<T> success(String message, HttpStatus status, T payload) {
         return ApiResponse.<T>builder()
+                .success(true)
                 .timestamp(Instant.now())
                 .message(message)
-                .status(status)
+                .status(status.getReasonPhrase())
                 .payload(payload)
+                .build();
+    }
+
+    public static <T> ApiResponse<T> success(String message, HttpStatus status) {
+        return ApiResponse.<T>builder()
+                .success(true)
+                .timestamp(Instant.now())
+                .message(message)
+                .status(status.getReasonPhrase())
+                .payload(null)
                 .build();
     }
 

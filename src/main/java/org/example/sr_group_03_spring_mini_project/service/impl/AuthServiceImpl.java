@@ -1,46 +1,153 @@
 package org.example.sr_group_03_spring_mini_project.service.impl;
 
+import lombok.SneakyThrows;
+import org.example.sr_group_03_spring_mini_project.config.RedisConfig;
+import org.example.sr_group_03_spring_mini_project.exception.auth.*;
 import org.example.sr_group_03_spring_mini_project.model.entity.AppUser;
 import org.example.sr_group_03_spring_mini_project.model.request.AppUserRequest;
 import org.example.sr_group_03_spring_mini_project.model.request.AuthRequest;
+import org.example.sr_group_03_spring_mini_project.model.response.AppUserResponse;
 import org.example.sr_group_03_spring_mini_project.model.response.TokenResponse;
 import org.example.sr_group_03_spring_mini_project.repository.AuthRepository;
 import org.example.sr_group_03_spring_mini_project.service.AuthService;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.example.sr_group_03_spring_mini_project.utils.JwtUtils;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Random;
 
 @Service
 public class AuthServiceImpl implements AuthService {
     private final AuthRepository authRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
+    private final EmailServiceImpl emailService;
+    private final CacheManager cacheManager;
 
-    public AuthServiceImpl(AuthRepository authRepository) {
+    public AuthServiceImpl(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailServiceImpl emailService, CacheManager cacheManager) {
         this.authRepository = authRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
+        this.emailService = emailService;
+        this.cacheManager = cacheManager;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-
-        return authRepository.getAppUserByIdentifier(identifier);
-    }
 
     @Override
     public TokenResponse login(AuthRequest request) {
-        return null;
+        AppUser appUser = authRepository.getAppUserByIdentifier(request.getIdentities());
+
+        if (appUser == null) throw new UserNotFoundException();
+        if (!appUser.getIsVerified()) throw new EmailNotVerifiedException();
+
+        if (!passwordEncoder.matches(request.getPassword(), appUser.getPassword())) {
+            throw new InvalidCredentialsException();
+        }
+
+        String token = jwtUtils.generateToken(appUser);
+        return new TokenResponse(token);
     }
 
+
+    @Transactional
     @Override
-    public AppUser register(AppUserRequest request) {
-        return null;
+    @SneakyThrows
+    public AppUserResponse register(AppUserRequest request) {
+        if (authRepository.existsByEmailOrUsername(request.getEmail(), request.getUsername())) {
+            throw new UserAlreadyExistsException();
+        }
+
+
+        AppUser newUser = AppUser.builder()
+                .userName(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .profileImage(request.getProfileImageUrl())
+                .build();
+
+
+        AppUser regisUser = authRepository.saveUser(newUser);
+
+        String otp = generateOtp();
+        saveOtpToCache(newUser.getEmail(), otp);
+        emailService.sendOtp(newUser.getEmail(), otp);
+
+        return AppUserResponse.builder()
+                .xp(regisUser.getXp())
+                .level(regisUser.getLevel())
+                .appUserId(regisUser.getAppUserId())
+                .userName(regisUser.getUsername())
+                .email(regisUser.getEmail())
+                .isVerified(regisUser.getIsVerified())
+                .profileImage(regisUser.getProfileImage())
+                .createAt(regisUser.getCreateAt())
+                .build();
     }
 
+    @SneakyThrows
     @Override
     public void resendOtp(String email) {
+        AppUser user = authRepository.getAppUserByIdentifier(email);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
 
+        if (user.getIsVerified()) {
+            throw new UserAlreadyVerifiedException();
+        }
+
+        String otp = generateOtp();
+        saveOtpToCache(email, otp);
+        emailService.sendOtp(email, otp);
     }
 
     @Override
     public void verifyOtp(String email, String otp) {
 
+        String storedOtp = getOtpFromCache(email);
+
+        if (storedOtp == null) {
+            throw new InvalidOtpException("OTP has expired. Please request a new one.");
+        }
+
+        if (!storedOtp.equals(otp)) {
+            throw new InvalidOtpException("Invalid OTP.");
+        }
+
+        evictOtpFromCache(email);
+
+        authRepository.verifyUserByEmail(email);
+    }
+
+    private String generateOtp() {
+        Random random = new Random();
+        int otp = 100000 + random.nextInt(900000);
+        return String.valueOf(otp);
+    }
+
+    private void saveOtpToCache(String email, String otp) {
+        Cache cache = cacheManager.getCache(RedisConfig.OTP_CACHE_NAME);
+        if (cache != null) {
+            cache.put(email, otp);
+        }
+    }
+
+    private String getOtpFromCache(String email) {
+        Cache cache = cacheManager.getCache(RedisConfig.OTP_CACHE_NAME);
+        if (cache != null) {
+            Cache.ValueWrapper wrapper = cache.get(email);
+            return wrapper != null ? (String) wrapper.get() : null;
+        }
+        return null;
+    }
+
+    private void evictOtpFromCache(String email) {
+        Cache cache = cacheManager.getCache(RedisConfig.OTP_CACHE_NAME);
+        if (cache != null) {
+            cache.evict(email);
+        }
     }
 }
