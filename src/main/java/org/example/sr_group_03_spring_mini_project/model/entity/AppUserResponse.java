@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class AppUserResponse {
     private String appUserId;
     private String userName;
+    private String email;
     private String password;
     private Long level;
     private Long xp;
