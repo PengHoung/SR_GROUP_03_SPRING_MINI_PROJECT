@@ -6,13 +6,15 @@ import lombok.NoArgsConstructor;
 import org.example.sr_group_03_spring_mini_project.enumData.FREQUENCYENUM;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Habit {
 
-    private String habitId;
+    private UUID habitId;
     private String title;
     private String description;
     private FREQUENCYENUM frequency;

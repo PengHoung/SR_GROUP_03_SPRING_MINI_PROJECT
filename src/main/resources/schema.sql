@@ -1,4 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE TYPE frequency_enum AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY');
 CREATE TABLE if not exists app_users (
                                          app_user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                                          username VARCHAR(255) NOT NULL UNIQUE,
