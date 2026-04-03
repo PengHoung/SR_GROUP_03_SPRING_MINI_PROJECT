@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileRequest {
-    private String userName;
-    private String profileImageUrl;
-
+public class AuthRequest {
+    private String identities;
+    private String password;
 }
