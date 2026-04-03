@@ -5,12 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppUserResponse {
-    private String appUserId;
+    private UUID appUserId;
     private String userName;
     private String email;
     private String password;
