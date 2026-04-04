@@ -55,7 +55,7 @@ public class ProfileController {
     public ResponseEntity<ApiResponse<Void>> deleteUserProfile(){
         profileService.deleteUserProfile();
         ApiResponse<Void> response = ApiResponse
-                .success("Delete User-Profile successfully",HttpStatus.OK);
+                .success("Delete UserProfile successfully",HttpStatus.OK);
         return ResponseEntity.ok(response);
     }
 
