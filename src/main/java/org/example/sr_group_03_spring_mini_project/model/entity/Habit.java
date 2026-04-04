@@ -14,6 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Habit {
+
     private UUID habitId;
     private String title;
     private String description;
@@ -21,4 +22,6 @@ public class Habit {
     private Boolean isActive;
     private AppUserResponse appUserResponse;
     private LocalDate createAt;
+
+
 }
