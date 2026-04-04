@@ -3,7 +3,6 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.env
 ### STS ###
 .apt_generated
 .classpath
@@ -30,4 +29,5 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+config.bat
+node_modules
