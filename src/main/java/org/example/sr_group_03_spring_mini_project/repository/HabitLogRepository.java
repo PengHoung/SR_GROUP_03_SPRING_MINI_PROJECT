@@ -11,15 +11,21 @@ import java.util.UUID;
 public interface HabitLogRepository {
 
     @Results(id = "habitLogMapper", value = {
-            @Result(property = "habitLogId", column = "habit_log_id", typeHandler = UuidTypeHandler.class),
-            @Result(property = "logDate",    column = "log_date"),
-            @Result(property = "status",     column = "status"),
-            @Result(property = "xpEarned",   column = "xp_earned"),
+            @Result(property = "habitLogId",    column = "habit_log_id", typeHandler = UuidTypeHandler.class),
+            @Result(property = "logDate",       column = "log_date"),
+            @Result(property = "status",        column = "status"),
+            @Result(property = "xpEarned",      column = "xp_earned"),
             @Result(property = "habit.habitId", column = "habit_id", typeHandler = UuidTypeHandler.class)
     })
     @Insert("""
         INSERT INTO habit_logs (habit_log_id, log_date, status, xp_earned, habit_id)
-        VALUES (#{habitLogId}, #{logDate}, #{status}, #{xpEarned}, #{habit.habitId})
+        VALUES (
+            #{habitLogId, typeHandler=org.example.sr_group_03_spring_mini_project.config.UuidTypeHandler},
+            #{logDate},
+            #{status},
+            #{xpEarned},
+            #{habit.habitId, typeHandler=org.example.sr_group_03_spring_mini_project.config.UuidTypeHandler}
+        )
         RETURNING *
     """)
     HabitLogEntity save(HabitLogEntity habitLog);
@@ -28,7 +34,7 @@ public interface HabitLogRepository {
     @Select("""
         SELECT habit_log_id, log_date, status, xp_earned, habit_id
         FROM habit_logs
-        WHERE habit_id = #{habitId}
+        WHERE habit_id = #{habitId, typeHandler=org.example.sr_group_03_spring_mini_project.config.UuidTypeHandler}
         ORDER BY log_date DESC
         LIMIT #{size} OFFSET #{offset}
     """)
