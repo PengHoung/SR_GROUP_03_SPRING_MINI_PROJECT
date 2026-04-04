@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface AchievementService {
 
-    List<Achievement> getAllAchievements();
+    List<Achievement> getAllAchievements(Integer page, Integer size);
 
-    List<Achievement> getCurrentUserAchievements();
+    List<Achievement> getCurrentUserAchievements(Integer page, Integer size);
 }
