@@ -3,10 +3,13 @@ package org.example.sr_group_03_spring_mini_project.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.example.sr_group_03_spring_mini_project.exception.auth.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,8 +22,6 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-
 
 
     // Handle @RequestParam / @PathVariable validation (Spring Boot < 3.2)
@@ -40,6 +41,45 @@ public class GlobalExceptionHandler {
     }
 
 
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleUserNotFound(UserNotFoundException ex, HttpServletRequest request) {
+        return buildProblemDetail(HttpStatus.NOT_FOUND, "User Not Found", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ProblemDetail> handleUserAlreadyExists(UserAlreadyExistsException ex, HttpServletRequest request) {
+        return buildProblemDetail(HttpStatus.CONFLICT, "User Already Exists", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ResponseEntity<ProblemDetail> handleEmailNotVerified(EmailNotVerifiedException ex, HttpServletRequest request) {
+        return buildProblemDetail(HttpStatus.FORBIDDEN, "Email Not Verified", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidCredentials(InvalidCredentialsException ex, HttpServletRequest request) {
+        return buildProblemDetail(HttpStatus.UNAUTHORIZED, "Invalid Credentials", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidOtpException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidOtp(InvalidOtpException ex, HttpServletRequest request) {
+        return buildProblemDetail(HttpStatus.UNPROCESSABLE_CONTENT, "Invalid OTP", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(UserAlreadyVerifiedException.class)
+    public ResponseEntity<ProblemDetail> handleUserAlreadyVerified(UserAlreadyVerifiedException ex, HttpServletRequest request) {
+        return buildProblemDetail(HttpStatus.CONFLICT, "Already Verified", ex.getMessage(), request);
+    }
+
+    private ResponseEntity<ProblemDetail> buildProblemDetail(HttpStatus status, String title, String detail, HttpServletRequest request) {
+        ProblemDetail pd = ProblemDetail.forStatus(status);
+        pd.setTitle(title);
+        pd.setDetail(detail);
+        pd.setProperty("instance", request.getRequestURI());
+        pd.setProperty("timestamp", LocalDateTime.now());
+        return ResponseEntity.status(status).body(pd);
+    }
 
     //when provide error and  give path of error with error message
     private ResponseEntity<ProblemDetail> buildErrorResponse(
@@ -77,7 +117,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(ex.getStatus()).body(problemDetail);
     }
-
 
 
     //invalid validate
