@@ -7,8 +7,10 @@ import org.example.sr_group_03_spring_mini_project.model.request.HabitLogRequest
 import org.example.sr_group_03_spring_mini_project.model.value.STATUSENUM;
 import org.example.sr_group_03_spring_mini_project.repository.HabitLogRepository;
 import org.example.sr_group_03_spring_mini_project.repository.HabitRepository;
+import org.example.sr_group_03_spring_mini_project.repository.ProfileRepository;
 import org.example.sr_group_03_spring_mini_project.service.HabitLogService;
 import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +21,7 @@ public class HabitLogServiceImpl implements HabitLogService {
 
     private final HabitLogRepository habitLogRepository;
     private final HabitRepository habitRepository;
+    private final ProfileRepository profileRepository;
 
     @Override
     public HabitLog createHabitLog(HabitLogRequest request, UUID appUserId) {
@@ -27,14 +30,24 @@ public class HabitLogServiceImpl implements HabitLogService {
                 .orElseThrow(() -> new RuntimeException("Habit not found with id: " + request.getHabitId()));
 
         HabitLog log = new HabitLog();
+        int xpEarned = calculateXp(request.getStatus());
         log.setHabitLogId(UUID.randomUUID());
         log.setLogDate(Instant.now());
         log.setStatus(request.getStatus().name());
-        log.setXpEarned(calculateXp(request.getStatus()));
+        log.setXpEarned(xpEarned);
         log.setHabit(habit);
-
         HabitLog saved = habitLogRepository.save(log);
         saved.setHabit(habit);
+
+        if (xpEarned > 0) {
+            profileRepository.addXpToUser(appUserId, xpEarned);
+            profileRepository.tryLevelUp(appUserId);
+        }
+        Habit freshHabit = habitRepository.getHabitById(
+                habit.getHabitId(), appUserId
+        ).orElseThrow();
+
+        saved.setHabit(freshHabit);
         return saved;
     }
 
@@ -49,6 +62,7 @@ public class HabitLogServiceImpl implements HabitLogService {
 
         return logs;
     }
+
     private Integer calculateXp(STATUSENUM status) {
         return switch (status) {
             case COMPLETED -> 10;
