@@ -9,3 +9,4 @@ public interface HabitLogService {
     HabitLogEntity createHabitLog(HabitLogRequest request, UUID appUserId);
     List<HabitLogEntity> getHabitLogsByHabitId(UUID habitId, UUID appUserId, int page, int size);
 }
+//hello
