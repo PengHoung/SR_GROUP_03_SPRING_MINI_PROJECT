@@ -1,9 +1,7 @@
 package org.example.sr_group_03_spring_mini_project.repository;
 
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
+import org.example.sr_group_03_spring_mini_project.model.request.ProfileRequest;
 import org.example.sr_group_03_spring_mini_project.model.response.AppUserResponse;
 
 import java.util.UUID;
@@ -23,4 +21,17 @@ public interface ProfileRepository {
     })
     @Select("SELECT * FROM app_users WHERE app_user_id = #{id}")
     AppUserResponse findById(UUID id);
+
+    @ResultMap(responseMapper)
+    @Select("""
+     UPDATE app_users SET username = #{req.userName}, profile_image = #{req.profileImageUrl} WHERE app_user_id = #{id};
+    """)
+    AppUserResponse updateUserProfile(UUID id,@Param("req") ProfileRequest request);
+
+
+    @ResultMap(responseMapper)
+    @Delete("""
+     DELETE FROM app_users WHERE app_user_id = #{id}  ;
+    """)
+    void deleteUserProfile(UUID id);
 }

@@ -1,5 +1,6 @@
 package org.example.sr_group_03_spring_mini_project.service.impl;
 
+import org.example.sr_group_03_spring_mini_project.exception.auth.UserNotFoundException;
 import org.example.sr_group_03_spring_mini_project.model.entity.AppUser;
 import org.example.sr_group_03_spring_mini_project.repository.AuthRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
         AppUser user = authRepository.getAppUserByIdentifier(identifier);
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with identifier: " + identifier);
+            throw new UserNotFoundException("User not found with identifier: " + identifier);
         }
         return user;
     }

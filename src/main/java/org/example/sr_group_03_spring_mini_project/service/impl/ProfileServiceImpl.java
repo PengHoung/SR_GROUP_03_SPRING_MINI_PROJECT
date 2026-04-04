@@ -1,7 +1,10 @@
 package org.example.sr_group_03_spring_mini_project.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.apache.ibatis.javassist.NotFoundException;
 import org.example.sr_group_03_spring_mini_project.model.entity.AppUser;
+import org.example.sr_group_03_spring_mini_project.model.request.ProfileRequest;
 import org.example.sr_group_03_spring_mini_project.model.response.AppUserResponse;
 import org.example.sr_group_03_spring_mini_project.repository.AuthRepository;
 import org.example.sr_group_03_spring_mini_project.repository.ProfileRepository;
@@ -29,5 +32,19 @@ public class ProfileServiceImpl implements ProfileService {
 //                .isVerified(appUserFromDb.getIsVerified())
 //                .createAt(appUserFromDb.getCreateAt())
 //                .build();
+    }
+
+    @Override
+    public AppUserResponse updateUserProfile(ProfileRequest request) {
+        AppUser appUser = (AppUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return profileRepository.updateUserProfile(appUser.getAppUserId(),request);
+    }
+
+    @Override
+    @SneakyThrows
+    public void deleteUserProfile() {
+        AppUser appUser = (AppUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        profileRepository.deleteUserProfile(appUser.getAppUserId());
+        SecurityContextHolder.clearContext();
     }
 }

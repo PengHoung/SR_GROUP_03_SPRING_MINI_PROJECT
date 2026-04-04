@@ -26,10 +26,11 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final UserDetailsService userDetailsService;
-
-    public SecurityConfig(JwtFilter jwtFilter, UserDetailsService userDetailsService) {
+     private final CustomAuthEntryPoint customAuthEntryPoint;
+    public SecurityConfig(JwtFilter jwtFilter, UserDetailsService userDetailsService, CustomAuthEntryPoint customAuthEntryPoint) {
         this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
+        this.customAuthEntryPoint = customAuthEntryPoint;
     }
 
     @Bean
@@ -45,14 +46,9 @@ public class SecurityConfig {
                                 "/api/v1/auths/**", "/api/v1/err",
                                 "/", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                         .permitAll().anyRequest().authenticated())
-                /*.exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            throw new AccessDeniedException("Access Denied");
-                        })
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            throw new AccessDeniedException("Access Denied");
-                        })
-                )*/
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthEntryPoint)
+                )
                 .build();
     }
 
