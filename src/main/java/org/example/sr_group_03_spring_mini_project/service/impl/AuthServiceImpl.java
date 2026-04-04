@@ -16,9 +16,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Random;
+import java.util.UUID;
 
 import static org.example.sr_group_03_spring_mini_project.utils.CacheUtils.OTP_CACHE_NAME.EMAIL_CACHE;
+import static org.example.sr_group_03_spring_mini_project.utils.CacheUtils.OTP_CACHE_NAME.USER_CACHE;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -53,7 +56,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
-    @Transactional
     @Override
     @SneakyThrows
     public AppUserResponse register(AppUserRequest request) {
@@ -63,48 +65,48 @@ public class AuthServiceImpl implements AuthService {
 
 
         AppUser newUser = AppUser.builder()
-                .userName(request.getUsername())
+                .appUserId(UUID.randomUUID())
+                .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .profileImage(request.getProfileImageUrl())
+                .xp(0L)
+                .level(1L)
+                .isVerified(false)
+                .createAt(LocalDate.now())
                 .build();
 
-
-        AppUser regisUser = authRepository.saveUser(newUser);
+        cacheUtils.put(USER_CACHE, request.getEmail(), newUser);
 
         String otp = generateOtp();
         cacheUtils.put(EMAIL_CACHE, newUser.getEmail(), otp);
         emailService.sendOtp(newUser.getEmail(), otp);
 
         return AppUserResponse.builder()
-                .xp(regisUser.getXp())
-                .level(regisUser.getLevel())
-                .appUserId(regisUser.getAppUserId())
-                .userName(regisUser.getUsername())
-                .email(regisUser.getEmail())
-                .isVerified(regisUser.getIsVerified())
-                .profileImage(regisUser.getProfileImage())
-                .createAt(regisUser.getCreateAt())
+                .xp(newUser.getXp())
+                .level(newUser.getLevel())
+                .appUserId(newUser.getAppUserId())
+                .userName(newUser.getUsername())
+                .email(newUser.getEmail())
+                .isVerified(newUser.getIsVerified())
+                .profileImage(newUser.getProfileImage())
+                .createAt(newUser.getCreateAt())
                 .build();
     }
 
     @SneakyThrows
     @Override
     public void resendOtp(String email) {
-        AppUser user = authRepository.getAppUserByIdentifier(email);
-        if (user == null) {
-            throw new UserNotFoundException();
-        }
-
-        if (user.getIsVerified()) {
+        if (authRepository.existsByEmail(email)) {
             throw new UserAlreadyVerifiedException();
-        }
 
+        }
         String otp = generateOtp();
         cacheUtils.put(EMAIL_CACHE, email, otp);
         emailService.sendOtp(email, otp);
     }
 
+    @Transactional
     @Override
     public void verifyOtp(String email, String otp) {
 
@@ -117,10 +119,17 @@ public class AuthServiceImpl implements AuthService {
         if (!storedOtp.equals(otp)) {
             throw new InvalidOtpException("Invalid OTP.");
         }
+        AppUser pendingUser = cacheUtils.get(USER_CACHE, email, AppUser.class);
+        if (pendingUser == null) {
+            throw new UserNotFoundException();
+        }
+        pendingUser.setIsVerified(true);
+
+        authRepository.saveUser(pendingUser);
 
         cacheUtils.evict(EMAIL_CACHE, email);
+        cacheUtils.evict(USER_CACHE, email);
 
-        authRepository.verifyUserByEmail(email);
     }
 
     private String generateOtp() {
