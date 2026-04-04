@@ -1,10 +1,10 @@
 package org.example.sr_group_03_spring_mini_project.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.example.sr_group_03_spring_mini_project.enumData.STATUSENUM;
 import org.example.sr_group_03_spring_mini_project.model.entity.Habit;
 import org.example.sr_group_03_spring_mini_project.model.entity.HabitLog;
 import org.example.sr_group_03_spring_mini_project.model.request.HabitLogRequest;
+import org.example.sr_group_03_spring_mini_project.model.value.STATUSENUM;
 import org.example.sr_group_03_spring_mini_project.repository.HabitLogRepository;
 import org.example.sr_group_03_spring_mini_project.repository.HabitRepository;
 import org.example.sr_group_03_spring_mini_project.service.HabitLogService;

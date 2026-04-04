@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResponse login(AuthRequest request) {
-        AppUser appUser = authRepository.getAppUserByIdentifier(request.getIdentities());
+        AppUser appUser = authRepository.getAppUserByIdentifier(request.getIdentifier());
 
         if (appUser == null) throw new UserNotFoundException();
         if (!appUser.getIsVerified()) throw new EmailNotVerifiedException();

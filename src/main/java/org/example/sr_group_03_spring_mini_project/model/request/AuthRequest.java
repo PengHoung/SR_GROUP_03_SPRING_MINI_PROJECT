@@ -14,7 +14,7 @@ public class AuthRequest {
 
     @NotBlank
     @NotNull
-    private String identities;
+    private String identifier;
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%#*?&])[A-Za-z\\d@$!#%*?&]{6,}$", message = "Password must contain uppercase, lowercase, number, and special character with minimum 6 characters.")
     private String password;
 }
