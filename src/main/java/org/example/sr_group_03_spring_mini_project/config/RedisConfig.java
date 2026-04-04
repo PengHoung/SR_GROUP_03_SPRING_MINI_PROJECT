@@ -8,10 +8,11 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 import java.time.Duration;
 
+import static org.example.sr_group_03_spring_mini_project.utils.CacheUtils.OTP_CACHE_NAME;
+
 @Configuration
 public class RedisConfig {
 
-    public static final String OTP_CACHE_NAME = "email";
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
@@ -24,7 +25,7 @@ public class RedisConfig {
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultSharedConfig)
-                .withCacheConfiguration(OTP_CACHE_NAME, otpConfig)
+                .withCacheConfiguration(OTP_CACHE_NAME.EMAIL_CACHE.name(), otpConfig)
                 .build();
     }
 }

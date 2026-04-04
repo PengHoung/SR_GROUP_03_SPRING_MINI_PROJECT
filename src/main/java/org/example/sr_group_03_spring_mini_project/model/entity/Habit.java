@@ -3,11 +3,10 @@ package org.example.sr_group_03_spring_mini_project.model.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.sr_group_03_spring_mini_project.enumData.FREQUENCYENUM;
 import org.example.sr_group_03_spring_mini_project.model.response.AppUserResponse;
+import org.example.sr_group_03_spring_mini_project.model.value.FREQUENCYENUM;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
