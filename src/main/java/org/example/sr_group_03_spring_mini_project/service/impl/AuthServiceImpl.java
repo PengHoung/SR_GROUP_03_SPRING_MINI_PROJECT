@@ -1,7 +1,6 @@
 package org.example.sr_group_03_spring_mini_project.service.impl;
 
 import lombok.SneakyThrows;
-import org.example.sr_group_03_spring_mini_project.config.RedisConfig;
 import org.example.sr_group_03_spring_mini_project.exception.auth.*;
 import org.example.sr_group_03_spring_mini_project.model.entity.AppUser;
 import org.example.sr_group_03_spring_mini_project.model.request.AppUserRequest;
@@ -10,29 +9,34 @@ import org.example.sr_group_03_spring_mini_project.model.response.AppUserRespons
 import org.example.sr_group_03_spring_mini_project.model.response.TokenResponse;
 import org.example.sr_group_03_spring_mini_project.repository.AuthRepository;
 import org.example.sr_group_03_spring_mini_project.service.AuthService;
+import org.example.sr_group_03_spring_mini_project.service.EmailService;
+import org.example.sr_group_03_spring_mini_project.utils.CacheUtils;
 import org.example.sr_group_03_spring_mini_project.utils.JwtUtils;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Random;
+import java.util.UUID;
+
+import static org.example.sr_group_03_spring_mini_project.utils.CacheUtils.OTP_CACHE_NAME.EMAIL_CACHE;
+import static org.example.sr_group_03_spring_mini_project.utils.CacheUtils.OTP_CACHE_NAME.USER_CACHE;
 
 @Service
 public class AuthServiceImpl implements AuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    private final EmailServiceImpl emailService;
-    private final CacheManager cacheManager;
+    private final EmailService emailService;
+    private final CacheUtils cacheUtils;
 
-    public AuthServiceImpl(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailServiceImpl emailService, CacheManager cacheManager) {
+    public AuthServiceImpl(AuthRepository authRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailService emailService, CacheUtils cacheUtils) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.emailService = emailService;
-        this.cacheManager = cacheManager;
+        this.cacheUtils = cacheUtils;
     }
 
 
@@ -52,7 +56,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
-    @Transactional
     @Override
     @SneakyThrows
     public AppUserResponse register(AppUserRequest request) {
@@ -62,52 +65,52 @@ public class AuthServiceImpl implements AuthService {
 
 
         AppUser newUser = AppUser.builder()
-                .userName(request.getUsername())
+                .appUserId(UUID.randomUUID())
+                .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .profileImage(request.getProfileImageUrl())
+                .xp(0L)
+                .level(1L)
+                .isVerified(false)
+                .createAt(LocalDate.now())
                 .build();
 
-
-        AppUser regisUser = authRepository.saveUser(newUser);
+        cacheUtils.put(USER_CACHE, request.getEmail(), newUser);
 
         String otp = generateOtp();
-        saveOtpToCache(newUser.getEmail(), otp);
+        cacheUtils.put(EMAIL_CACHE, newUser.getEmail(), otp);
         emailService.sendOtp(newUser.getEmail(), otp);
 
         return AppUserResponse.builder()
-                .xp(regisUser.getXp())
-                .level(regisUser.getLevel())
-                .appUserId(regisUser.getAppUserId())
-                .userName(regisUser.getUsername())
-                .email(regisUser.getEmail())
-                .isVerified(regisUser.getIsVerified())
-                .profileImage(regisUser.getProfileImage())
-                .createAt(regisUser.getCreateAt())
+                .xp(newUser.getXp())
+                .level(newUser.getLevel())
+                .appUserId(newUser.getAppUserId())
+                .userName(newUser.getUsername())
+                .email(newUser.getEmail())
+                .isVerified(newUser.getIsVerified())
+                .profileImage(newUser.getProfileImage())
+                .createAt(newUser.getCreateAt())
                 .build();
     }
 
     @SneakyThrows
     @Override
     public void resendOtp(String email) {
-        AppUser user = authRepository.getAppUserByIdentifier(email);
-        if (user == null) {
-            throw new UserNotFoundException();
-        }
-
-        if (user.getIsVerified()) {
+        if (authRepository.existsByEmail(email)) {
             throw new UserAlreadyVerifiedException();
-        }
 
+        }
         String otp = generateOtp();
-        saveOtpToCache(email, otp);
+        cacheUtils.put(EMAIL_CACHE, email, otp);
         emailService.sendOtp(email, otp);
     }
 
+    @Transactional
     @Override
     public void verifyOtp(String email, String otp) {
 
-        String storedOtp = getOtpFromCache(email);
+        String storedOtp = cacheUtils.get(EMAIL_CACHE, email, String.class);
 
         if (storedOtp == null) {
             throw new InvalidOtpException("OTP has expired. Please request a new one.");
@@ -116,10 +119,17 @@ public class AuthServiceImpl implements AuthService {
         if (!storedOtp.equals(otp)) {
             throw new InvalidOtpException("Invalid OTP.");
         }
+        AppUser pendingUser = cacheUtils.get(USER_CACHE, email, AppUser.class);
+        if (pendingUser == null) {
+            throw new UserNotFoundException();
+        }
+        pendingUser.setIsVerified(true);
 
-        evictOtpFromCache(email);
+        authRepository.saveUser(pendingUser);
 
-        authRepository.verifyUserByEmail(email);
+        cacheUtils.evict(EMAIL_CACHE, email);
+        cacheUtils.evict(USER_CACHE, email);
+
     }
 
     private String generateOtp() {
@@ -128,26 +138,4 @@ public class AuthServiceImpl implements AuthService {
         return String.valueOf(otp);
     }
 
-    private void saveOtpToCache(String email, String otp) {
-        Cache cache = cacheManager.getCache(RedisConfig.OTP_CACHE_NAME);
-        if (cache != null) {
-            cache.put(email, otp);
-        }
-    }
-
-    private String getOtpFromCache(String email) {
-        Cache cache = cacheManager.getCache(RedisConfig.OTP_CACHE_NAME);
-        if (cache != null) {
-            Cache.ValueWrapper wrapper = cache.get(email);
-            return wrapper != null ? (String) wrapper.get() : null;
-        }
-        return null;
-    }
-
-    private void evictOtpFromCache(String email) {
-        Cache cache = cacheManager.getCache(RedisConfig.OTP_CACHE_NAME);
-        if (cache != null) {
-            cache.evict(email);
-        }
-    }
 }
