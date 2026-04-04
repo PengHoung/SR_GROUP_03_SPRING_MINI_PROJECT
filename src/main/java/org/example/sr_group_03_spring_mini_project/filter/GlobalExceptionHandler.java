@@ -1,8 +1,9 @@
-package org.example.sr_group_03_spring_mini_project.exception;
+package org.example.sr_group_03_spring_mini_project.filter;
 
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.example.sr_group_03_spring_mini_project.exception.ApiException;
 import org.example.sr_group_03_spring_mini_project.exception.auth.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -22,7 +23,6 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
 
-    // Handle @RequestParam / @PathVariable validation (Spring Boot < 3.2)
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ProblemDetail> handleConstraintViolationException(
             ConstraintViolationException ex,
@@ -37,8 +37,6 @@ public class GlobalExceptionHandler {
 
         return buildErrorResponse(errors, request);
     }
-
-
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ProblemDetail> handleUserNotFound(UserNotFoundException ex, HttpServletRequest request) {
@@ -79,7 +77,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(pd);
     }
 
-    //when provide error and  give path of error with error message
     private ResponseEntity<ProblemDetail> buildErrorResponse(
             Map<String, String> errors,
             HttpServletRequest request) {
@@ -94,13 +91,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 
-
-    //handle with not found 404 , make new class with ApiException extents by RuntimeException.
-    //HttpServletRequest for get URI
-
-
-    //on api have some param (String detail, String title, String type, HttpStatus status)
-    //so ex it have getter for provide to ProblemDetail
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ProblemDetail> handleApiException(
             ApiException ex,
@@ -117,8 +107,6 @@ public class GlobalExceptionHandler {
     }
 
 
-    //invalid validate
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handleValidationException(
             MethodArgumentNotValidException ex,
@@ -131,8 +119,6 @@ public class GlobalExceptionHandler {
 
         return buildErrorResponse(errors, request);
     }
-
-    //invalid json
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ProblemDetail> handleHttpMessageNotReadableException(

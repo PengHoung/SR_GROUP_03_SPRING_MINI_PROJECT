@@ -1,5 +1,6 @@
 package org.example.sr_group_03_spring_mini_project.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +19,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldNameConstants
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AppUser implements UserDetails {
     private UUID appUserId;
-    private String userName;
+    private String username;
     private String email;
     private String password;
     private Long level;
