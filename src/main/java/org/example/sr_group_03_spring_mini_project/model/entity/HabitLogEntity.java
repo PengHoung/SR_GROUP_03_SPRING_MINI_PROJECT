@@ -14,5 +14,5 @@ public class HabitLogEntity {
     private Instant logDate;
     private String status;
     private Integer xpEarned;
-    private HabitEntity habit;
+    private Habit habit;
 }
