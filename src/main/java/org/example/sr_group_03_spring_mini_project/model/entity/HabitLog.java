@@ -3,17 +3,16 @@ package org.example.sr_group_03_spring_mini_project.model.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.sr_group_03_spring_mini_project.enumData.STATUSENUM;
 
-import java.time.LocalDate;
-
-@Data
+import java.time.Instant;
+import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class HabitLog {
-    private String habitLogId;
-    private LocalDate logDate;
-    private STATUSENUM status;
-    private Long xpEarned;
+    private UUID habitLogId;
+    private Instant logDate;
+    private String status;
+    private Integer xpEarned;
     private Habit habit;
 }
