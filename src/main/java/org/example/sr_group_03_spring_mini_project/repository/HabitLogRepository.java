@@ -17,7 +17,7 @@ public interface HabitLogRepository {
             @Result(property = "xpEarned",      column = "xp_earned"),
             @Result(property = "habit.habitId", column = "habit_id", typeHandler = UuidTypeHandler.class)
     })
-    @Insert("""
+    @Select("""
         INSERT INTO habit_logs (habit_log_id, log_date, status, xp_earned, habit_id)
         VALUES (
             #{habitLogId, typeHandler=org.example.sr_group_03_spring_mini_project.config.UuidTypeHandler},

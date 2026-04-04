@@ -20,7 +20,6 @@ public class Habit {
     private FREQUENCYENUM frequency;
     private Boolean isActive;
     private AppUserResponse appUserResponse;
-    private LocalDate createAt;
-
+    private LocalDate createdAt;
 
 }

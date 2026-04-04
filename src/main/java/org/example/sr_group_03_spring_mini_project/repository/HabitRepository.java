@@ -21,7 +21,7 @@ public interface HabitRepository {
             @Result(
                     property = "appUserResponse",
                     column = "app_user_id",
-                    one = @One(select = "org.example.sr_group_03_spring_mini_project.repository.AuthRepository.findById")
+                    one = @One(select = "org.example.sr_group_03_spring_mini_project.repository.ProfileRepository.findById")
             ),
     })
     @Select("""
@@ -50,7 +50,6 @@ public interface HabitRepository {
 
     @ResultMap("habitMapper")
     @Select("""
-            
                 UPDATE habits SET title = #{req.title} , description = #{req.description} , frequency = #{req.frequency}::frequency_enum WHERE habit_id = #{habitId} AND app_user_id = #{appUserid} RETURNING * ;
             """)
     Habit updateHabitById(UUID habitId, UUID appUserid, @Param("req") HabitRequest habitRequest);
