@@ -45,14 +45,14 @@ public class SecurityConfig {
                                 "/api/v1/auths/**", "/api/v1/err",
                                 "/", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                         .permitAll().anyRequest().authenticated())
-                .exceptionHandling(exception -> exception
+                /*.exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
                             throw new AccessDeniedException("Access Denied");
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             throw new AccessDeniedException("Access Denied");
                         })
-                )
+                )*/
                 .build();
     }
 

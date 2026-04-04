@@ -55,7 +55,7 @@ public class JwtUtils {
     }
 
     public boolean isTokenExp(String token) {
-        return extractExpDate(token).before(Date.from(ISSUED_AT));
+        return extractExpDate(token).before(new Date());
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails){

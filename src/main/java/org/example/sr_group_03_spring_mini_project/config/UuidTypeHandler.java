@@ -20,7 +20,7 @@ import java.util.UUID;
 public class UuidTypeHandler extends BaseTypeHandler<UUID> {
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, UUID parameter, JdbcType jdbcType) throws SQLException {
-        ps.setObject(i, parameter, jdbcType.TYPE_CODE);
+        ps.setObject(i, parameter);
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.example.sr_group_03_spring_mini_project.repository;
 import org.apache.ibatis.annotations.*;
 import org.example.sr_group_03_spring_mini_project.config.UuidTypeHandler;
 import org.example.sr_group_03_spring_mini_project.model.entity.AppUser;
+import org.example.sr_group_03_spring_mini_project.model.response.AppUserResponse;
 
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ public interface AuthRepository {
 
     @ResultMap(authMapper)
     @Select("SELECT * FROM app_users WHERE app_user_id = #{id}")
-    AppUser findById(UUID id);
+    AppUserResponse findById(UUID id);
 
     @Select("SELECT COUNT(1) FROM app_users WHERE email = #{email} OR username=#{username}")
     boolean existsByEmailOrUsername(String email, String username);
