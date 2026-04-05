@@ -66,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
 
         AppUser newUser = AppUser.builder()
                 .appUserId(UUID.randomUUID())
-                .username(request.getUsername())
+                .appUsername(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .profileImage(request.getProfileImageUrl())
@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
                 .xp(newUser.getXp())
                 .level(newUser.getLevel())
                 .appUserId(newUser.getAppUserId())
-                .userName(newUser.getUsername())
+                .userName(newUser.getAppUsername())
                 .email(newUser.getEmail())
                 .isVerified(newUser.getIsVerified())
                 .profileImage(newUser.getProfileImage())

@@ -22,7 +22,7 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AppUser implements UserDetails {
     private UUID appUserId;
-    private String username;
+    private String appUsername;
     private String email;
     private String password;
     private Long level;
@@ -40,5 +40,9 @@ public class AppUser implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public String getAppUsername() {
+        return appUsername;
     }
 }

@@ -12,7 +12,7 @@ public interface AuthRepository {
 
     @Results(id = authMapper, value = {
             @Result(property = AppUser.Fields.appUserId, column = "app_user_id"),
-            @Result(property = AppUser.Fields.username, column = "username"),
+            @Result(property = AppUser.Fields.appUsername, column = "username"),
             @Result(property = AppUser.Fields.email, column = "email"),
             @Result(property = AppUser.Fields.level, column = "level"),
             @Result(property = AppUser.Fields.xp, column = "xp"),
