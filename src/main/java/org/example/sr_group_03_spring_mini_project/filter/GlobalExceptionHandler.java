@@ -43,8 +43,8 @@ public class GlobalExceptionHandler {
         return buildProblemDetail(HttpStatus.NOT_FOUND, "User Not Found", ex.getMessage(), request);
     }
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ProblemDetail> handleUserAlreadyExists(UserAlreadyExistsException ex, HttpServletRequest request) {
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    public ResponseEntity<ProblemDetail> handleUserAlreadyExists(EntityAlreadyExistsException ex, HttpServletRequest request) {
         return buildProblemDetail(HttpStatus.CONFLICT, "User Already Exists", ex.getMessage(), request);
     }
 
