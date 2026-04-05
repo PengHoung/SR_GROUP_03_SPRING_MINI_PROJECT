@@ -34,11 +34,14 @@ public interface ProfileRepository {
 
     @Update("""
                 UPDATE app_users
-                SET level = level + 1, xp = xp - (level * 100)
+                SET
+                    level = level + FLOOR(xp / 100),
+                    xp    = MOD(xp, 100)
                 WHERE app_user_id = #{id}
-                AND xp >= (level * 100)
+                  AND xp >= 100
             """)
     void tryLevelUp(@Param("id") UUID id);
+
 
     @ResultMap(responseMapper)
     @Delete("""

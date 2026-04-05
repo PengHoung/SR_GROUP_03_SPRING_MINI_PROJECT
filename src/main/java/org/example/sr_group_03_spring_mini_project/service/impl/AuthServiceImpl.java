@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
     @SneakyThrows
     public AppUserResponse register(AppUserRequest request) {
         if (authRepository.existsByEmailOrUsername(request.getEmail(), request.getUsername())) {
-            throw new UserAlreadyExistsException();
+            throw new EntityAlreadyExistsException();
         }
 
 
